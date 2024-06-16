@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-""" Providing logs stored in MongoDB """
+""" MongoDB Operations with Python using pymongo """
 from pymongo import MongoClient
 
-
-def nginx_logs(mongo_collection):
-    """ providing nginx stored logs """
-    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
-
-    print(f"{mongo_collection.estimated_document_count()} logs")
-    print("Methods:")
-    for i in methods:
-        count = mongo_collection.count_documents({'method': i})
-        print(f"\tmethod {i}: {count}")
-
-    print(f"{mongo_collection.count_documents({'path': '/status'})}" +
-          " status check")
-
-
 if __name__ == "__main__":
-    nginx = MongoClient(host='localhost', port=27017).logs.nginx
-    nginx_logs(nginx)
+    """ Provides some stats about Nginx logs stored in MongoDB """
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    nginx_collection = client.logs.nginx
+
+    n_logs = nginx_collection.count_documents({})
+    print(f'{n_logs} logs')
+
+    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    print('Methods:')
+    for method in methods:
+        count = nginx_collection.count_documents({"method": method})
+        print(f'\tmethod {method}: {count}')
+
+    status_check = nginx_collection.count_documents(
+        {"method": "GET", "path": "/status"}
+    )
+
+    print(f'{status_check} status check')
